@@ -6,6 +6,25 @@ import Book from "@/database/models/book.model";
 import BookSegment from "@/database/models/book-segment.model";
 import { revalidatePath } from "next/cache";
 
+export const getAllBooks = async () => {
+  try {
+    await connectToDatabase();
+    const books = await Book.find().sort({ createdAt: -1 }).lean();
+    return {
+      success: true,
+      data:serializeData(books)
+    }
+
+  } catch (e) {
+    console.log("get all books fetch to failed", e);
+    return{
+      success: false,
+      error:e
+
+    }
+  }
+}
+
 export const checkBookExists = async (title: string) => {
   try {
     await connectToDatabase();
