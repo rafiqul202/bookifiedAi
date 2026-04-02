@@ -25,6 +25,42 @@ export const getAllBooks = async () => {
   }
 }
 
+export type BookBySlugData = {
+  title: string;
+  author: string;
+  coverURL: string;
+  persona: string;
+};
+
+export const getBookBySlug = async (slug: string) => {
+  try {
+    await connectToDatabase();
+    const normalized = slug.toLowerCase().trim();
+    const book = await Book.findOne({ slug: normalized }).lean();
+    if (!book) {
+      return { success: false as const, data: null };
+    }
+    const b = serializeData(book) as {
+      title: string;
+      author: string;
+      coverURL?: string;
+      persona?: string;
+    };
+    return {
+      success: true as const,
+      data: {
+        title: b.title,
+        author: b.author,
+        coverURL: b.coverURL ?? "",
+        persona: b.persona ?? "",
+      } satisfies BookBySlugData,
+    };
+  } catch (e) {
+    console.error("getBookBySlug failed", e);
+    return { success: false as const, data: null };
+  }
+};
+
 export const checkBookExists = async (title: string) => {
   try {
     await connectToDatabase();
