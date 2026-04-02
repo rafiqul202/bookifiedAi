@@ -12,18 +12,16 @@ export const getAllBooks = async () => {
     const books = await Book.find().sort({ createdAt: -1 }).lean();
     return {
       success: true,
-      data:serializeData(books)
-    }
-
+      data: serializeData(books),
+    };
   } catch (e) {
     console.log("get all books fetch to failed", e);
-    return{
+    return {
       success: false,
-      error:e
-
-    }
+      error: e,
+    };
   }
-}
+};
 
 export type BookBySlugData = {
   title: string;
@@ -35,29 +33,23 @@ export type BookBySlugData = {
 export const getBookBySlug = async (slug: string) => {
   try {
     await connectToDatabase();
-    const normalized = slug.toLowerCase().trim();
-    const book = await Book.findOne({ slug: normalized }).lean();
+
+    const book = await Book.findOne({ slug }).lean();
+
     if (!book) {
-      return { success: false as const, data: null };
+      return { success: false, error: "Book not found" };
     }
-    const b = serializeData(book) as {
-      title: string;
-      author: string;
-      coverURL?: string;
-      persona?: string;
-    };
+
     return {
-      success: true as const,
-      data: {
-        title: b.title,
-        author: b.author,
-        coverURL: b.coverURL ?? "",
-        persona: b.persona ?? "",
-      } satisfies BookBySlugData,
+      success: true,
+      data: serializeData(book),
     };
   } catch (e) {
-    console.error("getBookBySlug failed", e);
-    return { success: false as const, data: null };
+    console.error("Error fetching book by slug", e);
+    return {
+      success: false,
+      error: e,
+    };
   }
 };
 
@@ -110,8 +102,7 @@ export const createBook = async (data: CreateBook) => {
     console.error("Error creating a books", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create book",
+      error: error instanceof Error ? error.message : "Failed to create book",
     };
   }
 };
